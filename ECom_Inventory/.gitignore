@@ -1,0 +1,11 @@
+bin/
+obj/
+*.user
+*.suo
+*.cache
+*.log
+.vscode/
+.idea/
+wwwroot/lib/
+appsettings.*.json
+secrets.json

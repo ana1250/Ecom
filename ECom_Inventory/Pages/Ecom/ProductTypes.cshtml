@@ -1,0 +1,143 @@
+﻿@page
+@model ECom_Inventory.Pages.Ecom.ProductTypesModel
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationService
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Product Types";
+}
+
+<h2 class="mb-4">Manage Product Types</h2>
+@if ((await AuthorizationService.AuthorizeAsync(User, "AdminOnly")).Succeeded)
+{
+    <button class="btn btn-success mb-3" id="addProductTypeBtn">Add Product Type</button>
+}
+
+<div class="card">
+    <div class="card-body">
+        <table class="table table-hover my-0">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="productTypeTableBody">
+                @foreach (var productType in Model.ProductTypes)
+                {
+                    <tr>
+                        <td>@productType.Name</td>
+                        <td>
+                            <button class="btn btn-outline-primary btn-sm edit-btn"
+                                    data-id="@productType.Id"
+                                    data-name="@productType.Name">
+                                ✏
+                            </button>
+                            @if ((await AuthorizationService.AuthorizeAsync(User, "AdminOnly")).Succeeded)
+                            {
+                                <button class="btn btn-outline-danger btn-sm delete-btn" data-id="@productType.Id">🗑</button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add/Edit Product Type Modal -->
+<div class="modal fade" id="productTypeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Add Product Type</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="productTypeForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="productTypeId">
+                    <div class="mb-3">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-control" id="productTypeName" required>
+                    </div>
+                    <button type="submit" class="btn btn-success">Save</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+    document.addEventListener("DOMContentLoaded", function () {
+        let productTypeModal = new bootstrap.Modal(document.getElementById("productTypeModal"));
+        const productTypeForm = document.getElementById("productTypeForm");
+
+        const addProductTypeBtn = document.querySelector("#addProductTypeBtn");
+        if (addProductTypeBtn) {
+            addProductTypeBtn.addEventListener("click", function () {
+                document.getElementById("modalTitle").innerText = "Add Product Type";
+                productTypeForm.reset();
+                document.getElementById("productTypeId").value = "";
+                productTypeModal.show();
+            });
+        }
+
+        document.querySelectorAll(".edit-btn").forEach(btn => {
+            btn.addEventListener("click", function () {
+                document.getElementById("modalTitle").innerText = "Edit Product Type";
+                document.getElementById("productTypeId").value = this.getAttribute("data-id");
+                document.getElementById("productTypeName").value = this.getAttribute("data-name");
+                productTypeModal.show();
+            });
+        });
+
+        document.querySelectorAll(".delete-btn").forEach(btn => {
+            btn.addEventListener("click", function () {
+                let productTypeId = this.getAttribute("data-id");
+                if (confirm("Are you sure you want to delete this product type?")) {
+                    fetch("?handler=Delete", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", "RequestVerificationToken": token },
+                        body: JSON.stringify(productTypeId)
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert("Deleted successfully");
+                                location.reload();
+                            }
+                        })
+                        .catch(error => console.error("Error:", error));
+                }
+            });
+        });
+
+        productTypeForm.addEventListener("submit", function (e) {
+            e.preventDefault();
+            let productTypeId = document.getElementById("productTypeId").value;
+            let url = productTypeId ? "?handler=Edit" : "?handler=Create";
+            let productTypeData = {
+                Id: productTypeId || 0,
+                Name: document.getElementById("productTypeName").value
+            };
+
+            fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "RequestVerificationToken": token },
+                body: JSON.stringify(productTypeData)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        location.reload();
+                    }
+                })
+                .catch(error => console.error("Error:", error));
+
+            productTypeModal.hide();
+        });
+    });
+</script>

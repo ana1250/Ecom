@@ -1,0 +1,79 @@
+﻿@page
+@model ECom_Inventory.Pages.DashboardModel
+@{
+    Layout = "_Layout"; // Use the shared layout
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="content">
+    <div class="container-fluid p-0">
+        <h1 class="h3 mb-3">Dashboard</h1>
+
+        <div class="row">
+            <!-- Manage Products Card -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h3>Manage Products</h3>
+                        <a href="/Ecom/ManageProduct" class="btn btn-primary">Go to Products</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- View Profile Card -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h3>View Profile</h3>
+                        <a href="/Auth/Profile" class="btn btn-secondary">Go to Profile</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <!-- Suppliers Card -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h3>Suppliers</h3>
+                        <a href="/Ecom/Suppliers" class="btn btn-info">View Suppliers</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Manage Users Card (Admin Only) -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h3>Manage Users (Admin Only)</h3>
+                        <a href="/Auth/AddUser" class="btn btn-danger">Go to User Management</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Additional Cards for Brands and Product Types -->
+        <div class="row mt-4">
+            <!-- Brands Card -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h3>Brands</h3>
+                        <a href="/Ecom/Brands" class="btn btn-warning">View Brands</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Types Card -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <h3>Product Types</h3>
+                        <a href="/Ecom/ProductTypes" class="btn btn-success">View Product Types</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

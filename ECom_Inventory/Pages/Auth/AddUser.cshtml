@@ -1,0 +1,89 @@
+﻿@page
+@model ECom_Inventory.Pages.Auth.AddUserModel
+@{
+    ViewData["Title"] = "Add User";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add User</title>
+    <link rel="stylesheet" href="~/css/app.css">
+</head>
+<body>
+    <main class="d-flex w-100">
+        <div class="container d-flex flex-column">
+            <div class="row vh-100">
+                <div class="col-sm-10 col-md-8 col-lg-6 col-xl-5 mx-auto d-table h-100">
+                    <div class="d-table-cell align-middle">
+
+                        <div class="text-center mt-4">
+                            <h1 class="h2">Add User</h1>
+                            <p class="lead">Create a new user account.</p>
+                        </div>
+
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="m-sm-3">
+                                    <form method="post">
+                                        @Html.AntiForgeryToken()
+                                        <div class="mb-3">
+                                            <label for="username" class="form-label">Username</label>
+                                            <input type="text" id="username" name="Username" class="form-control form-control-lg" placeholder="Enter username" required>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="email" class="form-label">Email</label>
+                                            <input type="email" id="email" name="Email" class="form-control form-control-lg" placeholder="Enter email" required>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="password" class="form-label">Password</label>
+                                            <input type="password" id="password" name="Password" class="form-control form-control-lg" placeholder="Enter password" required>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="confirmPassword" class="form-label">Confirm Password</label>
+                                            <input type="password" id="confirmPassword" name="ConfirmPassword" class="form-control form-control-lg" placeholder="Confirm password" required>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label for="role" class="form-label">Role</label>
+                                            <select id="role" name="Role" class="form-control">
+                                                <option value="User">User</option>
+                                                <option value="Admin">Admin</option>
+                                            </select>
+                                        </div>
+
+                                        <div class="d-grid gap-2 mt-3">
+                                            <button type="submit" class="btn btn-lg btn-primary" id="registerBtn">Add User</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="text-center mb-3">
+                            <a href="/Auth/Login">Back to Login</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script defer>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.querySelector("form").addEventListener("submit", function () {
+                let btn = document.getElementById("registerBtn");
+                if (btn) {
+                    btn.disabled = true;
+                    btn.innerHTML = "Adding user...";
+                }
+            });
+        });
+    </script>
+</body>
+</html>

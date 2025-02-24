@@ -1,0 +1,265 @@
+﻿@page
+@model ECom_Inventory.Pages.Ecom.ManageProductsModel
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationService
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Manage Products";
+}
+
+<h2 class="mb-4">Manage Products</h2>
+@if ((await AuthorizationService.AuthorizeAsync(User, "AdminOnly")).Succeeded)
+{
+    <button class="btn btn-success mb-3" id="addProductBtn">Add Product</button>
+}
+
+<div class="card">
+    <div class="card-body">
+        <table class="table table-hover my-0">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Price</th>
+                    <th>Stock</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="productTableBody">
+                @foreach (var product in Model.Products)
+                {
+                    <tr>
+                        <td>@product.Name</td>
+                        <td>@product.Description</td>
+                        <td>@product.Price</td>
+                        <td>@product.Stock</td>
+                        <td>
+                            <button class="btn btn-outline-primary btn-sm edit-btn"
+                                    data-id="@product.Id"
+                                    data-name="@product.Name"
+                                    data-description="@product.Description"
+                                    data-price="@product.Price"
+                                    data-stock="@product.Stock"
+                                    data-brand="@product.BrandId"
+                                    data-type="@product.ProductTypeId"
+                                    data-supplier="@product.SupplierId">
+                                ✏
+                            </button>
+                            @if ((await AuthorizationService.AuthorizeAsync(User, "AdminOnly")).Succeeded)
+                            {
+                                <button class="btn btn-outline-danger btn-sm delete-btn" data-id="@product.Id">🗑</button>
+                            }
+                            <button class="btn btn-outline-info btn-sm audit-btn"
+                                    data-id="@product.Id"
+                                    data-createdby="@product.CreatedBy"
+                                    data-createdat="@product.CreatedAt"
+                                    data-updatedby="@product.UpdatedBy"
+                                    data-updatedat="@product.UpdatedAt">
+                                📜
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add/Edit Product Modal -->
+<div class="modal fade" id="productModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Add Product</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="productForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="productId">
+                    <div class="mb-3">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-control" id="productName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <input type="text" class="form-control" id="productDescription" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Price</label>
+                        <input type="number" class="form-control" id="productPrice" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Stock</label>
+                        <input type="number" class="form-control" id="productStock" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Brand</label>
+                        <select class="form-control" id="productBrand" required>
+                            <option value="">Select Brand</option>
+                            @foreach (var brand in Model.Brands)
+                            {
+                                <option value="@brand.Id">@brand.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Product Type</label>
+                        <select class="form-control" id="productType" required>
+                            <option value="">Select Product Type</option>
+                            @foreach (var type in Model.ProductTypes)
+                            {
+                                <option value="@type.Id">@type.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Supplier</label>
+                        <select class="form-control" id="productSupplier" required>
+                            <option value="">Select Supplier</option>
+                            @foreach (var supplier in Model.Suppliers)
+                            {
+                                <option value="@supplier.Id">@supplier.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-success">Save</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Audit Details Modal -->
+<div class="modal fade" id="auditModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Audit Details</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form>
+                    <div class="mb-3">
+                        <label class="form-label">Created By</label>
+                        <input type="text" class="form-control" id="createdBy" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Created At</label>
+                        <input type="text" class="form-control" id="createdAt" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Updated By</label>
+                        <input type="text" class="form-control" id="updatedBy" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Updated At</label>
+                        <input type="text" class="form-control" id="updatedAt" readonly>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+    document.addEventListener("DOMContentLoaded", function () {
+        let productModal = new bootstrap.Modal(document.getElementById("productModal"));
+        let auditModal = new bootstrap.Modal(document.getElementById("auditModal"));
+        const productForm = document.getElementById("productForm");
+
+        // Add Product Button Click
+        const addProductBtn = document.querySelector("#addProductBtn");
+        if (addProductBtn)
+        {
+                addProductBtn.addEventListener("click", function () {
+                document.getElementById("modalTitle").innerText = "Add Product";
+                productForm.reset();
+                document.getElementById("productId").value = "";
+                productModal.show();
+            });
+        }
+
+        // Edit Button Click
+        document.querySelectorAll(".edit-btn").forEach(btn => {
+            btn.addEventListener("click", function () {
+                document.getElementById("modalTitle").innerText = "Edit Product";
+                document.getElementById("productId").value = this.getAttribute("data-id");
+                document.getElementById("productName").value = this.getAttribute("data-name");
+                document.getElementById("productDescription").value = this.getAttribute("data-description");
+                document.getElementById("productPrice").value = this.getAttribute("data-price");
+                document.getElementById("productStock").value = this.getAttribute("data-stock");
+                document.getElementById("productBrand").value = this.getAttribute("data-brand");
+                document.getElementById("productType").value = this.getAttribute("data-type");
+                document.getElementById("productSupplier").value = this.getAttribute("data-supplier");
+                productModal.show();
+            });
+        });
+
+        // Delete Button Click
+        document.querySelectorAll(".delete-btn").forEach(btn => {
+            btn.addEventListener("click", function () {
+                let productId = this.getAttribute("data-id");
+                if (confirm("Are you sure you want to delete this product?")) {
+                    fetch("?handler=Delete", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", "RequestVerificationToken": token },
+                        body: JSON.stringify(productId)
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert("Deleted successfully");
+                                location.reload();
+                            }
+                        })
+                        .catch(error => console.error("Error:", error));
+                }
+            });
+        });
+
+        // Audit Button Click
+        document.querySelectorAll(".audit-btn").forEach(btn => {
+            btn.addEventListener("click", function () {
+                document.getElementById("createdBy").value = this.getAttribute("data-createdby");
+                document.getElementById("createdAt").value = this.getAttribute("data-createdat");
+                document.getElementById("updatedBy").value = this.getAttribute("data-updatedby");
+                document.getElementById("updatedAt").value = this.getAttribute("data-updatedat");
+                auditModal.show();
+            });
+        });
+
+        // Form Submission
+        productForm.addEventListener("submit", function (e) {
+            e.preventDefault();
+            let productId = document.getElementById("productId").value;
+            let url = productId ? "?handler=Edit" : "?handler=Create";
+            let productData = {
+                Id: productId ? parseInt(productId) : 0,
+                Name: document.getElementById("productName").value,
+                Description: document.getElementById("productDescription").value,
+                Price: parseFloat(document.getElementById("productPrice").value),
+                Stock: parseInt(document.getElementById("productStock").value),
+                BrandId: parseInt(document.getElementById("productBrand").value),
+                ProductTypeId: parseInt(document.getElementById("productType").value),
+                SupplierId: parseInt(document.getElementById("productSupplier").value)
+            };
+
+            fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "RequestVerificationToken": token },
+                body: JSON.stringify(productData)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        productModal.hide();
+                        location.reload();
+                    }
+                })
+                .catch(error => console.error("Error:", error));
+        });
+    });
+</script>

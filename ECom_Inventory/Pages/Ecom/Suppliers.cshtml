@@ -1,0 +1,162 @@
+﻿@page
+@model ECom_Inventory.Pages.Ecom.SuppliersModel;
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationService
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Suppliers";
+}
+
+<h2 class="mb-4">Manage Suppliers</h2>
+@if ((await AuthorizationService.AuthorizeAsync(User, "AdminOnly")).Succeeded)
+{
+    <button class="btn btn-success mb-3" id="addSupplierBtn">Add Supplier</button>
+}
+
+<div class="card">
+    <div class="card-body">
+        <table class="table table-hover my-0">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Product Supplied</th>
+                    <th>Phone Number</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="supplierTableBody">
+                @foreach (var supplier in Model.Suppliers)
+                {
+                    <tr>
+                        <td>@supplier.Name</td>
+                        <td>@supplier.Product</td>
+                        <td>@supplier.Phone</td>
+                        <td>
+                            <button class="btn btn-outline-primary btn-sm edit-btn"
+                                    data-id="@supplier.Id"
+                                    data-name="@supplier.Name"
+                                    data-product="@supplier.Product"
+                                    data-phone="@supplier.Phone">
+                                ✏
+                            </button>
+                            @if ((await AuthorizationService.AuthorizeAsync(User, "AdminOnly")).Succeeded)
+                            {
+                                <button class="btn btn-outline-danger btn-sm delete-btn" data-id="@supplier.Id">🗑</button>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Add/Edit Supplier Modal -->
+<div class="modal fade" id="supplierModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Add Supplier</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="supplierForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" id="supplierId">
+                    <div class="mb-3">
+                        <label class="form-label">Name</label>
+                        <input type="text" class="form-control" id="supplierName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Product Supplied</label>
+                        <input type="text" class="form-control" id="supplierProduct" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Phone Number</label>
+                        <input type="text" class="form-control" id="supplierPhone" required>
+                    </div>
+                    <button type="submit" class="btn btn-success">Save</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+    document.addEventListener("DOMContentLoaded", function () {
+        let supplierModal = new bootstrap.Modal(document.getElementById("supplierModal"));
+        const supplierForm = document.getElementById("supplierForm");
+
+        const addSupplierBtn = document.querySelector("#addSupplierBtn");
+        if (addSupplierBtn)
+        { 
+        addSupplierBtn.addEventListener("click", function () {
+            document.getElementById("modalTitle").innerText = "Add Supplier";
+            supplierForm.reset();
+            document.getElementById("supplierId").value = "";
+            supplierModal.show();
+            });
+        }
+
+        document.querySelectorAll(".edit-btn").forEach(btn => {
+            btn.addEventListener("click", function () {
+                document.getElementById("modalTitle").innerText = "Edit Supplier";
+                document.getElementById("supplierId").value = this.getAttribute("data-id");
+                document.getElementById("supplierName").value = this.getAttribute("data-name");
+                document.getElementById("supplierProduct").value = this.getAttribute("data-product");
+                document.getElementById("supplierPhone").value = this.getAttribute("data-phone");
+                supplierModal.show();
+            });
+        });
+
+        document.querySelectorAll(".delete-btn").forEach(btn => {
+            btn.addEventListener("click", function () {
+                let supplierId = this.getAttribute("data-id");
+                if (confirm("Are you sure you want to delete this supplier?")) {
+                    fetch("?handler=Delete", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json", "RequestVerificationToken": token },
+                        body: JSON.stringify(supplierId)
+                    })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                alert("Deleted successfully");
+                                location.reload();
+                            }
+                        })
+                        .catch(error => console.error("Error:", error));
+                }
+            });
+        });
+
+        supplierForm.addEventListener("submit", function (e) {
+            e.preventDefault();
+            let supplierId = document.getElementById("supplierId").value;
+            let url = supplierId ? "?handler=Edit" : "?handler=Create";
+            let supplierData = {
+                Id: supplierId || 0,
+                Name: document.getElementById("supplierName").value,
+                Product: document.getElementById("supplierProduct").value,
+                Phone: document.getElementById("supplierPhone").value
+            };
+
+            fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "RequestVerificationToken": token },
+                body: JSON.stringify(supplierData)
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        location.reload();
+                    }
+                })
+                .catch(error => console.error("Error:", error));
+
+            supplierModal.hide();
+        });
+    });
+</script>

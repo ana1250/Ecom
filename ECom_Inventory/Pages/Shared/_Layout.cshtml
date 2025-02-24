@@ -1,0 +1,95 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"] - Admin Panel</title>
+    <link href="~/css/app.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="wrapper">
+        <!-- Sidebar -->
+        <nav id="sidebar" class="sidebar js-sidebar">
+            <div class="sidebar-content js-simplebar">
+                <a class="sidebar-brand" href="/">
+                    <span class="align-middle">Admin Panel</span>
+                </a>
+
+                <ul class="sidebar-nav">
+                    <li class="sidebar-item">
+                        <a href="/Dashboard" class="sidebar-link">
+                            <i class="align-middle" data-feather="home"></i>
+                            <span class="align-middle">Dashboard</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <a href="/Auth/Profile" class="sidebar-link">
+                            <i class="align-middle" data-feather="user"></i>
+                            <span class="align-middle">Profile</span>
+                        </a>
+                    </li>
+                    <li class="sidebar-item">
+                        <form method="post" action="/Auth/Logout">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-danger w-100">
+                                <i class="align-middle" data-feather="log-out"></i> Logout
+                            </button>
+                        </form>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main">
+            <!-- Navbar -->
+            <nav class="navbar navbar-expand navbar-light navbar-bg">
+                <button class="sidebar-toggle js-sidebar-toggle btn btn-outline-secondary">
+                    <i class="hamburger align-self-center"></i>
+                </button>
+            </nav>
+
+            <!-- Main Content -->
+            <main class="content">
+                <div class="container-fluid p-0">
+                    @RenderBody()  @*This is where the page content will be loaded *@
+                </div>
+            </main>
+
+            <!-- Footer -->
+            <footer class="footer">
+                <div class="container-fluid">
+                    <p class="mb-0 text-muted">Admin Panel &copy; 2024</p>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/feather-icons"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            feather.replace();
+
+            // Sidebar toggle functionality
+            const sidebarToggle = document.querySelector('.js-sidebar-toggle');
+            const sidebar = document.querySelector('.js-sidebar');
+
+            if (sidebarToggle && sidebar) {
+                sidebarToggle.addEventListener('click', function () {
+                    sidebar.classList.toggle('collapsed');
+                    localStorage.setItem("sidebarState", sidebar.classList.contains("collapsed") ? "collapsed" : "");
+                });
+
+                // Restore sidebar state
+                if (localStorage.getItem("sidebarState") === "collapsed") {
+                    sidebar.classList.add("collapsed");
+                }
+            }
+        });
+    </script>
+</body>
+</html>

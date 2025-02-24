@@ -1,0 +1,100 @@
+﻿@page
+@model ECom_Inventory.Pages.Auth.ProfileModel
+
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Profile";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <link href="~/css/app.css" rel="stylesheet">
+</head>
+<body>
+    <div class="wrapper">
+        <div class="main">
+            <main class="content">
+                <div class="container-fluid">
+                    <h1 class="h3 mb-3">User Profile</h1>
+
+                    <div class="row">
+                        <div class="col-md-6 mx-auto">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title mb-0">Profile Details</h5>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table">
+                                        <tbody>
+                                            <tr>
+                                                <th>Name:</th>
+                                                <td>@Model.UserName</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Email:</th>
+                                                <td>
+                                                    <form id="updateEmailForm">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="email" id="emailInput" value="@Model.Email" class="form-control">
+                                                        <button type="button" id="updateEmailBtn" class="btn btn-primary mt-2">Update Email</button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>Role:</th>
+                                                <td>@Model.Role</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Last Logged In:</th>
+                                                <td>@Model.LastLogin</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </main>
+
+            <footer class="footer">
+                <div class="container-fluid">
+                    <p class="mb-0 text-muted">Admin Panel &copy; 2024</p>
+                </div>
+            </footer>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value
+            document.getElementById("updateEmailBtn").addEventListener("click", function () {
+                let newEmail = document.getElementById("emailInput").value;
+
+                fetch("?handler=UpdateEmail", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "RequestVerificationToken": token
+                    },
+                    body: JSON.stringify({ email: newEmail })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            alert(data.message);
+                        } else {
+                            alert("Failed to update email: " + data.message);
+                        }
+                    })
+                    .catch(error => console.error("Error:", error));
+            });
+        });
+    </script>
+</body>
+</html>
