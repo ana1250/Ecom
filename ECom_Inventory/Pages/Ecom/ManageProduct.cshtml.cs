@@ -74,6 +74,7 @@ namespace ECom_Inventory.Pages.Ecom
             }
         }
 
+        [Authorize(Policy = "AdminOnly")]
         public async Task<JsonResult> OnPostEditAsync([FromBody] Product product)
         {
             try

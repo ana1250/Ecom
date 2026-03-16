@@ -1,4 +1,4 @@
-﻿@page
+@page
 @model ECom_Inventory.Pages.Ecom.SuppliersModel;
 @using Microsoft.AspNetCore.Authorization
 @inject IAuthorizationService AuthorizationService
@@ -7,15 +7,20 @@
     ViewData["Title"] = "Suppliers";
 }
 
-<h2 class="mb-4">Manage Suppliers</h2>
-@if ((await AuthorizationService.AuthorizeAsync(User, "AdminOnly")).Succeeded)
-{
-    <button class="btn btn-success mb-3" id="addSupplierBtn">Add Supplier</button>
-}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="h3 mb-0 text-gray-800">Manage Suppliers</h2>
+    @if ((await AuthorizationService.AuthorizeAsync(User, "AdminOnly")).Succeeded)
+    {
+        <button class="btn btn-success shadow-sm rounded-pill px-4" id="addSupplierBtn">
+            <i data-feather="plus" class="align-middle me-1"></i> Add Supplier
+        </button>
+    }
+</div>
 
-<div class="card">
-    <div class="card-body">
-        <table class="table table-hover my-0">
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover my-0">
             <thead>
                 <tr>
                     <th>Name</th>
@@ -48,6 +53,7 @@
                 }
             </tbody>
         </table>
+        </div>
     </div>
 </div>
 

@@ -1,4 +1,4 @@
-﻿@page
+@page
 @model ECom_Inventory.Pages.Ecom.ManageProductsModel
 @using Microsoft.AspNetCore.Authorization
 @inject IAuthorizationService AuthorizationService
@@ -7,21 +7,29 @@
     ViewData["Title"] = "Manage Products";
 }
 
-<h2 class="mb-4">Manage Products</h2>
-@if ((await AuthorizationService.AuthorizeAsync(User, "AdminOnly")).Succeeded)
-{
-    <button class="btn btn-success mb-3" id="addProductBtn">Add Product</button>
-}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="h3 mb-0 text-gray-800">Manage Products</h2>
+    @if ((await AuthorizationService.AuthorizeAsync(User, "AdminOnly")).Succeeded)
+    {
+        <button class="btn btn-success shadow-sm rounded-pill px-4" id="addProductBtn">
+            <i data-feather="plus" class="align-middle me-1"></i> Add Product
+        </button>
+    }
+</div>
 
-<div class="card">
-    <div class="card-body">
-        <table class="table table-hover my-0">
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover my-0">
             <thead>
                 <tr>
                     <th>Name</th>
                     <th>Description</th>
                     <th>Price</th>
                     <th>Stock</th>
+                    <th>Brand</th>
+                    <th>Type</th>
+                    <th>Supplier</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -33,6 +41,9 @@
                         <td>@product.Description</td>
                         <td>@product.Price</td>
                         <td>@product.Stock</td>
+                        <td>@(product.Brand?.Name ?? "N/A")</td>
+                        <td>@(product.ProductType?.Name ?? "N/A")</td>
+                        <td>@(product.Supplier?.Name ?? "N/A")</td>
                         <td>
                             <button class="btn btn-outline-primary btn-sm edit-btn"
                                     data-id="@product.Id"
@@ -62,6 +73,7 @@
                 }
             </tbody>
         </table>
+        </div>
     </div>
 </div>
 

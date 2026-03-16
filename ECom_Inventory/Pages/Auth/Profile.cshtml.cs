@@ -27,9 +27,16 @@ public class ProfileModel : PageModel
 
     public async Task<IActionResult> OnGetAsync()
     {
-
         UserName = User.FindFirstValue("name") ?? "N/A";
         var user = await _authService.GetProfileAsync(UserName);
+
+        if (user == null)
+        {
+            _logger.LogWarning("Profile not found for user claim '{UserName}'. Redirecting to login.", UserName);
+            Response.Cookies.Delete("AuthToken");
+            return RedirectToPage("/Auth/Login");
+        }
+
         UserName = user.Username ?? "N/A";
         Email = user.Email ?? "N/A";
         Role = user.Role ?? "N/A";

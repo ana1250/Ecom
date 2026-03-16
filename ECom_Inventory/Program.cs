@@ -34,13 +34,16 @@ try
         options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
     // Add Authentication with JWT
+    var jwtSecretKey = builder.Configuration["AuthSettings:SecretKey"]
+        ?? throw new InvalidOperationException("AuthSettings:SecretKey is not configured. JWT authentication cannot start without a secret key.");
+
     builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddJwtBearer(options =>
         {
             options.TokenValidationParameters = new TokenValidationParameters
             {
                 ValidateIssuerSigningKey = true,
-                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["AuthSettings:SecretKey"])),
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecretKey)),
                 ValidateIssuer = true,
                 ValidateAudience = true,
                 ValidIssuer = builder.Configuration["AuthSettings:Issuer"],
@@ -80,10 +83,8 @@ try
         options.AddPolicy("AdminOnly", policy =>
             policy.RequireClaim(ClaimTypes.Role, "Admin"));
     });
-    builder.Services.ConfigureApplicationCookie(options =>
-    {
-        options.AccessDeniedPath = "/Auth/Denied";
-    });
+    // Note: ConfigureApplicationCookie requires ASP.NET Identity and has no effect with JWT.
+    // Access denied redirects are handled via JwtBearerEvents.OnForbidden above.
 
 
 
@@ -108,6 +109,7 @@ try
         app.UseHsts();
     }
 
+    app.UseHttpsRedirection();
     // Middleware setup
     app.UseStaticFiles();
     app.UseRouting();
@@ -124,8 +126,6 @@ try
         });
     }
 
-    app.MapRazorPages();
-    app.MapControllers();
     app.Use(async (context, next) =>
     {
         await next();
@@ -135,6 +135,8 @@ try
             context.Response.Redirect("/Auth/NotFound");
         }
     });
+    app.MapRazorPages();
+    app.MapControllers();
     Log.Information("Application is starting up...");
     app.Run();
 }

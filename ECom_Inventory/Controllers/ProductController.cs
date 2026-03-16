@@ -50,16 +50,11 @@ namespace ECom_Inventory.Controllers
         }
 
         [HttpDelete("{id}")]
+        [Authorize(Policy = "AdminOnly")]
         public async Task<IActionResult> DeleteProduct(int id)
         {
             await _productService.DeleteProductAsync(id);
             return NoContent();
-        }
-        [HttpGet("debug")]
-        public IActionResult DebugClaims()
-        {
-            var claims = User.Claims.Select(c => new { c.Type, c.Value }).ToList();
-            return Ok(claims);
         }
 
     }

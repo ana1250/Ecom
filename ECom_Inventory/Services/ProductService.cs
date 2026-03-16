@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using ECom_Inventory.Data;
 using ECom_Inventory.Model;
 using Microsoft.EntityFrameworkCore;
@@ -23,7 +23,11 @@ namespace ECom_Inventory.Services
         {
             try
             {
-                return await _context.Products.ToListAsync();
+                return await _context.Products
+                    .Include(p => p.Brand)
+                    .Include(p => p.ProductType)
+                    .Include(p => p.Supplier)
+                    .ToListAsync();
             }
             catch (Exception ex)
             {
@@ -65,7 +69,16 @@ namespace ECom_Inventory.Services
                 var existingProduct = await _context.Products.FindAsync(product.Id);
                 if (existingProduct != null)
                 {
-                    _context.Entry(existingProduct).CurrentValues.SetValues(product); // Update values
+                    existingProduct.Name = product.Name;
+                    existingProduct.Description = product.Description;
+                    existingProduct.Price = product.Price;
+                    existingProduct.Stock = product.Stock;
+                    existingProduct.BrandId = product.BrandId;
+                    existingProduct.ProductTypeId = product.ProductTypeId;
+                    existingProduct.SupplierId = product.SupplierId;
+                    
+                    // Note: We deliberately do NOT update CreatedAt or CreatedBy
+                    
                     await _context.SaveChangesAsync();
                 }
             }
@@ -75,7 +88,6 @@ namespace ECom_Inventory.Services
             }
         }
 
-        [Authorize(Policy = "AdminPolicy")]
         public async Task DeleteProductAsync(int id)
         {
             try

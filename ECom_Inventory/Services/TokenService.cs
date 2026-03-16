@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -21,7 +21,9 @@ public class TokenService : ITokenService
     {
         try
         {
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["AuthSettings:SecretKey"]));
+            var secretKey = _configuration["AuthSettings:SecretKey"]
+                ?? throw new InvalidOperationException("AuthSettings:SecretKey is not configured.");
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var claims = new List<Claim>

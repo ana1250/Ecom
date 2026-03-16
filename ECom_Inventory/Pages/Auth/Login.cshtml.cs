@@ -45,15 +45,26 @@ namespace ECom_Inventory.Pages.Auth
 
 		public async Task<IActionResult> OnPostAsync()
 		{
+            if (!ModelState.IsValid)
+            {
+                return Page();
+            }
 
             var user = await _authService.LoginAsync(Input.Username, Input.Password);
 
-    		if (user == null)//|| !BCrypt.Net.BCrypt.Verify(Input.Password, user.PasswordHash))
+    		if (user == null)
             {
                 ErrorMessage = "Invalid username or password.";
-                return Page();//
+                return Page();
             }
             var token = _tokenService.GenerateToken(user);
+
+            if (string.IsNullOrEmpty(token))
+            {
+                _logger.LogError("Token generation failed for user {Username}.", Input.Username);
+                ErrorMessage = "An error occurred during login. Please try again.";
+                return Page();
+            }
 
             Response.Cookies.Append("AuthToken", token, new Microsoft.AspNetCore.Http.CookieOptions
             {
@@ -64,7 +75,7 @@ namespace ECom_Inventory.Pages.Auth
             });
 
             string ipAddress = _httpContextAccessor.HttpContext?.Connection?.RemoteIpAddress?.ToString() ?? "Unknown";
-            await _authService.LogActionAsync(Input.Username,user.Email, "Login", ipAddress);
+            await _authService.LogActionAsync(Input.Username, user.Email, "Login", ipAddress);
             return RedirectToPage("/Index");
         }
 

@@ -1,8 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.AspNetCore.Http;
-using System.Linq;
-using System.IdentityModel.Tokens.Jwt;
 
 namespace ECom_Inventory.Pages
 {
@@ -10,23 +7,12 @@ namespace ECom_Inventory.Pages
     {
         public IActionResult OnGet()
         {
+            // If the user has no auth cookie, redirect to login.
+            // If they do, redirect to Dashboard — the [Authorize] attribute
+            // on DashboardModel will properly validate the JWT signature and expiry.
             var token = Request.Cookies["AuthToken"];
 
             if (string.IsNullOrEmpty(token))
-            {
-                return RedirectToPage("/Auth/Login");
-            }
-
-            var handler = new JwtSecurityTokenHandler();
-            try
-            {
-                var jwtToken = handler.ReadToken(token) as JwtSecurityToken;
-                if (jwtToken == null || jwtToken.ValidTo < System.DateTime.UtcNow)
-                {
-                    return RedirectToPage("/Auth/Login");
-                }
-            }
-            catch
             {
                 return RedirectToPage("/Auth/Login");
             }
